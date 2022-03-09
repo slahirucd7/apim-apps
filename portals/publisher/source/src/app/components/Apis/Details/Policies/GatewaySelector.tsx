@@ -41,6 +41,7 @@ const SupportedGatewayTypes = {
 interface GatewaySelectorProps {
     getGatewayType(isChoreoConnectEnabled: boolean): void;
     isChoreoConnectEnabled: boolean;
+    setGatewayChange(isChoreoConnectEnabled: boolean): void;
 }
 
 /**
@@ -48,18 +49,21 @@ interface GatewaySelectorProps {
  * @param {JSON} props Input props from parent components.
  * @returns {TSX} Radio group for the API Gateway.
  */
-const GatewaySelector: FC<GatewaySelectorProps> = ({ getGatewayType, isChoreoConnectEnabled }) => {
+const GatewaySelector: FC<GatewaySelectorProps> = ({ getGatewayType, isChoreoConnectEnabled, setGatewayChange }) => {
+    console.log("Gate:" , isChoreoConnectEnabled);
     const [apiFromContext] = useAPI();
     let selectedGatewayType;
 
     const [isRadioButtonChange, setRadioButtonChange] = useState(false);
+    const [isCCSelected, setIsCCSelected] = useState(false);
 
-    const saveAfterGatewayChange = (isChoreoConnectEnabled: boolean) => {
-        if (isChoreoConnectEnabled) {
-            getGatewayType(false); 
+    const saveAfterGatewayChange = () => {
+        if (isCCSelected) {
+            getGatewayType(true); 
         } else {
-            getGatewayType(true);
+            getGatewayType(false);
         }
+        setGatewayChange(true);
         setRadioButtonChange(false);
     }
 
@@ -74,8 +78,11 @@ const GatewaySelector: FC<GatewaySelectorProps> = ({ getGatewayType, isChoreoCon
     /**
      * Handles accepted gateway type change after approving dialog box.
      */
-    const handleApprovedGatewayChange = () => {
+    const handleApprovedGatewayChange = (isCCEnabled: boolean) => {
         setRadioButtonChange(true);
+        console.log("Zzzzzzzz" ,isCCSelected);
+        setIsCCSelected(isCCEnabled);
+        console.log("ZzzzzzzzBBBB" ,isCCSelected);
     }
 
     /**
@@ -127,7 +134,7 @@ const GatewaySelector: FC<GatewaySelectorProps> = ({ getGatewayType, isChoreoCon
                                                 defaultChecked
                                                 id='regularGateway'
                                                 disabled={isRestricted(['apim:api_create'], apiFromContext)}
-                                                onChange={handleApprovedGatewayChange}
+                                                onChange={() => handleApprovedGatewayChange(false)}
                                             />
                                         }
                                         label="Regular Gateway"
@@ -137,8 +144,8 @@ const GatewaySelector: FC<GatewaySelectorProps> = ({ getGatewayType, isChoreoCon
                                         control={
                                             <Radio
                                                 color='primary'
-                                                disabled={true}
-                                                onChange={handleApprovedGatewayChange}
+                                                disabled={isRestricted(['apim:api_create'], apiFromContext)}
+                                                onChange={() => handleApprovedGatewayChange(true)}
                                             />
                                         }
                                         label="Choreo Connect"
@@ -173,7 +180,7 @@ const GatewaySelector: FC<GatewaySelectorProps> = ({ getGatewayType, isChoreoCon
                                         />
                                     </Button>
                                     <Button
-                                        onClick={() => { saveAfterGatewayChange(isChoreoConnectEnabled) }}
+                                        onClick={() => { saveAfterGatewayChange() }}
                                         color='primary'
                                     >
                                         <FormattedMessage
